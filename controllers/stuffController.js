@@ -32,8 +32,22 @@ exports.getOneThing = (req, res, next) => {
 };
 
 exports.modifyThing = (req, res, next) => {
+ 
+  if (req.file) {
+    //Suppression de l'ancien fichier photo
+    Thing.findOne({ _id: req.params.id })
+    .then((thing) => {
+      console.log(thing);
+      const filename = thing.imageUrl.split("/images")[1];
+      //suppression des fichiers du système fichiers.
+      fs.unlink(`images/${filename}`, () => {})
+    })
+    .catch(error => res.status(400).json({ error })
+    )
+  }
+
   const thingObject = req.file
-    ? {
+    ? {         
         ...JSON.parse(req.body.thing),
         imageUrl: `${req.protocol}://${req.get("host")}/images/${
           req.file.filename
